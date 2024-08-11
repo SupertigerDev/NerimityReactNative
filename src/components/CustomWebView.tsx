@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {forwardRef, useImperativeHandle, useRef, useState} from 'react';
 import {StyleSheet} from 'react-native';
 import WebView, {WebViewMessageEvent} from 'react-native-webview';
@@ -12,6 +12,7 @@ import TrackPlayer, {
 } from 'react-native-track-player';
 import {storeUserId} from '../EncryptedStore';
 import {registerNotificationChannels} from '../pushNotifications';
+import {AppState} from 'react-native';
 
 export interface CustomWebViewRef {
   goBack: () => boolean;
@@ -29,6 +30,19 @@ export const CustomWebView = forwardRef<CustomWebViewRef, CustomWebViewProps>(
     const webViewRef = useRef<WebView | null>(null);
 
     const [webViewCanGoBack, setWebViewCanGoBack] = useState(false);
+
+    useEffect(() => {
+      const dispose = AppState.addEventListener('change', state => {
+        const event = state === 'active' ? 'focus' : 'blur';
+        webViewRef.current?.injectJavaScript(`  
+          window.dispatchEvent(new Event('${event}'));
+        `);
+      });
+
+      return () => {
+        dispose.remove();
+      };
+    });
 
     const localRefs = () =>
       ({
