@@ -207,7 +207,6 @@ export const CustomWebView = forwardRef<CustomWebViewRef, CustomWebViewProps>(
         setBuiltInZoomControls={false}
         textInteractionEnabled={false}
         textZoom={100}
-        webviewDebuggingEnabled
         style={styles.container}
         source={{uri: props.url || 'https://nerimity.com/login'}}
         onLoadProgress={({nativeEvent}) => {
@@ -222,5 +221,6 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     height: '100%',
+    backgroundColor: '#131416',
   },
 });
