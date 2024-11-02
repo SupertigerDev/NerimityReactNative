@@ -20,3 +20,11 @@ export async function getLastUpdateCheckedDate() {
     (await EncryptedStorage.getItem('last_update_checked_date')) || '0',
   );
 }
+
+export async function storeUserToken(token: string) {
+  await EncryptedStorage.setItem('user_token', token);
+}
+
+export async function getUserToken() {
+  return await EncryptedStorage.getItem('user_token');
+}

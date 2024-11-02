@@ -10,7 +10,7 @@ import TrackPlayer, {
   State,
   useTrackPlayerEvents,
 } from 'react-native-track-player';
-import {storeUserId} from '../EncryptedStore';
+import {storeUserId, storeUserToken} from '../EncryptedStore';
 import {registerNotificationChannels} from '../pushNotifications';
 import {AppState} from 'react-native';
 
@@ -103,7 +103,7 @@ export const CustomWebView = forwardRef<CustomWebViewRef, CustomWebViewProps>(
           post('logout');
         }
         const authenticated = (userId) => {
-          post('authenticated', userId);
+          post('authenticated', {userId, userToken: localStorage.getItem("userToken")});
         }
 
       
@@ -188,9 +188,10 @@ export const CustomWebView = forwardRef<CustomWebViewRef, CustomWebViewProps>(
       }
       if (event === 'authenticated') {
         props.onAuthenticated(payload);
-        const userId = payload;
+        const {userId, userToken} = payload;
         console.log('authenticated', userId);
         await storeUserId(userId);
+        await storeUserToken(userToken);
         await registerNotificationChannels();
 
         await messaging().registerDeviceForRemoteMessages();

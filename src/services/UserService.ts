@@ -1,4 +1,5 @@
 import env from '../env';
+import {ChannelType, RawUser} from './RawData';
 import {request} from './Request';
 import ServiceEndpoints from './ServiceEndpoints';
 
@@ -31,5 +32,38 @@ export async function registerFCM(token: string) {
     method: 'POST',
     useToken: true,
     notJSON: true,
+  });
+}
+export interface RawChannel {
+  id: string;
+  categoryId?: string;
+  name: string;
+  icon?: string;
+  createdById?: string;
+  serverId?: string;
+  type: ChannelType;
+  permissions?: number;
+  createdAt: number;
+  lastMessagedAt?: number;
+  order?: number;
+  slowModeSeconds?: number;
+
+  _count?: {attachments: number};
+}
+export interface RawInboxWithoutChannel {
+  id: string;
+  createdAt: number;
+  createdById: string;
+  channelId: string;
+  recipient: RawUser;
+  closed: boolean;
+  lastSeen?: number;
+}
+
+export async function openDMChannelRequest(userId: string) {
+  return request<RawInboxWithoutChannel & {channel: RawChannel}>({
+    url: env.SERVER_URL + '/api' + ServiceEndpoints.openUserDM(userId),
+    method: 'POST',
+    useToken: true,
   });
 }

@@ -18,6 +18,7 @@ import notifee, {EventType, Notification} from '@notifee/react-native';
 import {getLatestRelease, Release} from './src/githubApi';
 import env from './src/env';
 import {dmChannelMatch, serverChannelMatch} from './src/UrlPatternMatchers';
+import {openDMChannelRequest} from './src/services/UserService';
 
 TrackPlayer.setupPlayer();
 
@@ -44,6 +45,7 @@ function App(): JSX.Element {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const webViewRef = useRef<CustomWebViewRef | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
+  const [url, setUrl] = useState<string | null>(null);
   const runIfAuthenticated = useWaitFor(authenticated);
   useUpdateChecker();
 
@@ -53,6 +55,17 @@ function App(): JSX.Element {
       const channelId = notification?.data?.channelId;
       const userId = notification?.data?.userId;
 
+      if (!authenticated && serverId) {
+        setUrl(`https://nerimity.com/app/servers/${serverId}/${channelId}`);
+        return;
+      }
+      if (!authenticated && !serverId) {
+        openDMChannelRequest(userId).then(() => {
+          setUrl(`https://nerimity.com/app/inbox/${channelId}`);
+        });
+        return;
+      }
+
       runIfAuthenticated(() => {
         webViewRef.current?.emit('openChannel', {
           serverId,
@@ -61,7 +74,7 @@ function App(): JSX.Element {
         });
       });
     },
-    [runIfAuthenticated],
+    [runIfAuthenticated, authenticated],
   );
 
   useEffect(() => {
@@ -118,6 +131,7 @@ function App(): JSX.Element {
       <CustomWebView
         onAuthenticated={() => setAuthenticated(true)}
         ref={webViewRef}
+        url={url || 'https://nerimity.com/login'}
         onVideoClick={setVideoUrl}
       />
       <Show when={videoUrl}>
