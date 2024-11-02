@@ -1,7 +1,11 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Alert, AppState, BackHandler, Linking, Platform} from 'react-native';
 import Show from './src/components/ui/Show';
-import {CustomWebView, CustomWebViewRef} from './src/components/CustomWebView';
+import {
+  currentUrl,
+  CustomWebView,
+  CustomWebViewRef,
+} from './src/components/CustomWebView';
 import {CustomVideo, CustomVideoRef} from './src/components/ui/CustomVideo';
 import TrackPlayer from 'react-native-track-player';
 
@@ -13,17 +17,19 @@ import messaging, {
 import notifee, {EventType, Notification} from '@notifee/react-native';
 import {getLatestRelease, Release} from './src/githubApi';
 import env from './src/env';
+import {dmChannelMatch, serverChannelMatch} from './src/UrlPatternMatchers';
 
 TrackPlayer.setupPlayer();
 
 async function onMessageReceived(
   message: FirebaseMessagingTypes.RemoteMessage,
+  isBackground: boolean,
 ) {
-  handlePushNotification(message.data as any);
+  handlePushNotification(message.data as any, isBackground);
 }
 
-messaging().onMessage(onMessageReceived);
-messaging().setBackgroundMessageHandler(onMessageReceived);
+messaging().onMessage(e => onMessageReceived(e, false));
+messaging().setBackgroundMessageHandler(e => onMessageReceived(e, true));
 
 let backgroundClickedNotification: Notification | undefined;
 notifee.onBackgroundEvent(async ({type, detail}) => {

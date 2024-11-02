@@ -5,6 +5,8 @@ import notifee, {
 } from '@notifee/react-native';
 import env from './env';
 import {getUserId} from './EncryptedStore';
+import {dmChannelMatch, serverChannelMatch} from './UrlPatternMatchers';
+import {currentUrl} from './components/CustomWebView';
 
 export enum MessageType {
   CONTENT = 0,
@@ -59,7 +61,16 @@ interface DMNotificationData extends NotificationData {
 
 export async function handlePushNotification(
   data: ServerNotificationData & DMNotificationData,
+  isBackground: boolean,
 ) {
+  if (!isBackground) {
+    const {channelId} =
+      dmChannelMatch(currentUrl) || serverChannelMatch(currentUrl) || {};
+    if (channelId && data.channelId === channelId) {
+      return;
+    }
+  }
+
   if (data.serverId) {
     showServerPushNotification(data);
   }

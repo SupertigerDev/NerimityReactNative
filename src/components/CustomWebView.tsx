@@ -25,6 +25,8 @@ export interface CustomWebViewProps {
   onAuthenticated: (userId: string) => void;
 }
 
+export let currentUrl = '';
+
 export const CustomWebView = forwardRef<CustomWebViewRef, CustomWebViewProps>(
   (props, ref) => {
     const webViewRef = useRef<WebView | null>(null);
@@ -211,6 +213,9 @@ export const CustomWebView = forwardRef<CustomWebViewRef, CustomWebViewProps>(
         source={{uri: props.url || 'https://nerimity.com/login'}}
         onLoadProgress={({nativeEvent}) => {
           setWebViewCanGoBack(nativeEvent.canGoBack);
+        }}
+        onNavigationStateChange={state => {
+          currentUrl = state.url;
         }}
         onMessage={onMessage}
       />
